@@ -1,76 +1,106 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import Navbar from "./components/layout/Navbar";
 import Users from "./components/users/users";
 import User from "./components/users/User";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./index.css";
-import axios from "axios";
 import Search from "./components/users/Search";
 import Alert from "./components/layout/Alert";
 import About from "./components/pages/About";
+import GithubState from "./context/github/GithubState";
 
-export default function App({props}) {
+export default function App({ props }) {
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState({});
   const [repos, setRepos] = useState([]);
   const [alert, setAlert] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // componentDidMount = async () => {
-  //   // console.log(process.env.REACT_APP_GITHUB_CLIENT_SECRET);
-  //   this.setState({ loading: true });
-  //   const response = await axios.get(`https://api.github.com/users`);
-  //   const data = await response.data;
-  //   this.setState({ users: data, loading: false });
-  //   // console.log(data);
-  // };
+  const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+  const githubClientSecret = import.meta.env.VITE_GITHUB_CLIENT_SECRET;
 
-  //Search Github Users
+  // useEffect(()=>{
+  //   console.log(githubClientSecret);
+  // }, [])
+  
+
+  // Search Github Users
   const searchUsers = async (text) => {
     setLoading(true);
-    const response = await axios.get(
-      `https://api.github.com/search/users?q=${text}&client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&client_secret=${import.meta.env.VITE_GITHUB_CLIENT_SECRET}`
-    );
-    const data = await response.data.items;
-    setUsers(data)
-    setLoading(false)
+    try {
+      const response = await fetch(
+        `https://api.github.com/search/users?q=${text}&client_id=${githubClientId}&client_secret=${githubClientSecret}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setUsers(data.items);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  //Get single Github users
+  // Get single Github user
   const getUser = async (username) => {
     setLoading(true);
-    const response = await axios.get(
-      `https://api.github.com/users/${username}?client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&client_secret=${import.meta.env.VITE_GITHUB_CLIENT_SECRET}`
-    );
-    const data = await response.data;
-    setUser(data)
-    setLoading(false)
+    try {
+      const response = await fetch(
+        `https://api.github.com/users/${username}?client_id=${githubClientId}&client_secret=${githubClientSecret}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setUser(data);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  //Get users repos
+  // Get users repos
   const getUserRepo = async (username) => {
     setLoading(true);
-    const response = await axios.get(
-      `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&client_secret=${import.meta.env.VITE_GITHUB_CLIENT_SECRET}`
-    );
-    const data = await response.data;
-    setRepos(data)
-    setLoading(false)
-  }
+    try {
+      const response = await fetch(
+        `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=${githubClientId}&client_secret=${githubClientSecret}`
+      );
 
-  //Clear users
-  const clearUsers = () => {
-    setUsers([])
-    setLoading(false)
+      if (!response.ok) {
+        throw new Error(`Request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setRepos(data);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  //Set alert
+  // Clear users
+  const clearUsers = () => {
+    setUsers([]);
+    setLoading(false);
+  };
+
+  // Set alert
   const setAlerts = (msg) => {
-    setAlert(msg)
+    setAlert(msg);
     setTimeout(() => setAlert(null), 3000);
   };
 
-    return (
+  return (
+    <GithubState>
       <Router>
         <div>
           <Navbar />
@@ -87,10 +117,7 @@ export default function App({props}) {
                     showButton={users.length > 0 ? true : false}
                   />
                   <div className="container">
-                    <Users
-                      loading={loading}
-                      users={users}
-                    />
+                    <Users loading={loading} users={users} />
                   </div>
                 </Fragment>
               }
@@ -103,7 +130,7 @@ export default function App({props}) {
                   {...props}
                   getUser={getUser}
                   getUserRepo={getUserRepo}
-                  repos= {repos}
+                  repos={repos}
                   user={user}
                   loading={loading}
                 />
@@ -112,7 +139,7 @@ export default function App({props}) {
           </Routes>
         </div>
       </Router>
-    );
-  }
+    </GithubState>
 
-
+  );
+}

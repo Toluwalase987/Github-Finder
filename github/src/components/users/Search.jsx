@@ -1,7 +1,9 @@
-import React, { Component, useState } from "react";
+import React, { Component, useContext, useState } from "react";
+import GithubContext from "../../context/github/githubContext";
 
 
-export default function Search({setAlert, searchUsers, clearUsers, showButton}){
+export default function Search({setAlert, clearUsers, showButton}){
+  const githubContext = useContext(GithubContext)
   const [text, setText] = useState("")
 
   const handleSubmit = (e) => {
@@ -9,7 +11,7 @@ export default function Search({setAlert, searchUsers, clearUsers, showButton}){
     if (text === ''){
         setAlert('Please enter something')
     }else{
-        searchUsers(text);
+        githubContext.searchUsers(text);
         setText("");
     }
   };
