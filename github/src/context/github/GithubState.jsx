@@ -1,4 +1,4 @@
-import { useReducer, useEffect } from "react";
+import { useReducer, useEffect, useState } from "react";
 import GithubContext from "./githubContext";
 import GithubReducer from "./githubReducer";
 import {
@@ -11,7 +11,7 @@ import {
   REMOVE_ALERT,
 } from "../../../types";
 
-const GithubState = (props) => {
+const GithubState = ({children}) => {
   const initialState = {
     users: [],
     user: {},
@@ -28,10 +28,12 @@ const GithubState = (props) => {
 //   }, []);
 
   const [state, dispatch] = useReducer(GithubReducer, initialState);
+  const [loading,setIsLoading]=useState(false)
+  const [users,setUser]= useState([])
 
   //Search Users
   const searchUsers = async (text) => {
-    setLoading();
+    setIsLoading(true)
     try {
       const response = await fetch(
         `https://api.github.com/search/users?q=${text}&client_id=${githubClientId}&client_secret=${githubClientSecret}`
@@ -42,10 +44,12 @@ const GithubState = (props) => {
       }
 
       const data = await response.json();
+      setIsLoading(false)
       dispatch({
         type: SEARCH_USERS,
         payload: data.items
       });
+      setUser(data.items)
       console.log(data.items);
     } catch (error) {
       console.error("Error:", error);
@@ -66,14 +70,14 @@ const GithubState = (props) => {
   return (
     <GithubContext.Provider
       value={{
-        users: state.users,
+        users,
         user: state.user,
         repos: state.repos,
-        loading: state.loading,
+        loading,
         searchUsers,
       }}
     >
-      {props.children}
+      {children}
     </GithubContext.Provider>
   );
 };

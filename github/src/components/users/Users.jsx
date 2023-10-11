@@ -6,22 +6,20 @@ const Users = () => {
   const githubContext = useContext(GithubContext);
   const { loading, users } = githubContext;
 
-//   useEffect(() => {
-//     console.log(users); // Log the users whenever it changes
-//   }, [users]); 
+  console.log(users) 
 
 
   return (
     <div>
-      {loading ? (
+      {loading &&
         <div className="loading-spinner"></div>
-      ) : (
-        <div style={userStyle}>
+      }
+{    !loading&&    <div style={userStyle}>
           {users.map((user) => (
             <UserItem key={user.id} user={user} />
           ))}
         </div>
-      )}
+}      
     </div>
   );
 };

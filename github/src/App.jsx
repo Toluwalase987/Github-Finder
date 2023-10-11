@@ -1,13 +1,12 @@
 import React, { Fragment, useEffect, useState } from "react";
 import Navbar from "./components/layout/Navbar";
-import Users from "./components/users/users";
+import Users from "./components/users/Users";
 import User from "./components/users/User";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./index.css";
 import Search from "./components/users/Search";
 import Alert from "./components/layout/Alert";
 import About from "./components/pages/About";
-import GithubState from "./context/github/GithubState";
 
 export default function App({ props }) {
   const [users, setUsers] = useState([]);
@@ -19,15 +18,23 @@ export default function App({ props }) {
   const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
   const githubClientSecret = import.meta.env.VITE_GITHUB_CLIENT_SECRET;
 
-  // useEffect(()=>{
-  //   console.log(githubClientSecret);
-  // }, [])
-  
+  const handleRequest = async (requestFn) => {
+    setLoading(true);
+    try {
+      const data = await requestFn();
+      return data;
+    } catch (error) {
+      console.error("Error:", error);
+      setAlert("Failed to fetch data. Please try again later.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Search Github Users
   const searchUsers = async (text) => {
-    setLoading(true);
-    try {
+    const data = await handleRequest(async () => {
       const response = await fetch(
         `https://api.github.com/search/users?q=${text}&client_id=${githubClientId}&client_secret=${githubClientSecret}`
       );
@@ -36,19 +43,17 @@ export default function App({ props }) {
         throw new Error(`Request failed with status: ${response.status}`);
       }
 
-      const data = await response.json();
+      return response.json();
+    });
+
+    if (data) {
       setUsers(data.items);
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
   // Get single Github user
   const getUser = async (username) => {
-    setLoading(true);
-    try {
+    const data = await handleRequest(async () => {
       const response = await fetch(
         `https://api.github.com/users/${username}?client_id=${githubClientId}&client_secret=${githubClientSecret}`
       );
@@ -57,19 +62,17 @@ export default function App({ props }) {
         throw new Error(`Request failed with status: ${response.status}`);
       }
 
-      const data = await response.json();
+      return response.json();
+    });
+
+    if (data) {
       setUser(data);
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
   // Get users repos
   const getUserRepo = async (username) => {
-    setLoading(true);
-    try {
+    const data = await handleRequest(async () => {
       const response = await fetch(
         `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=${githubClientId}&client_secret=${githubClientSecret}`
       );
@@ -78,12 +81,11 @@ export default function App({ props }) {
         throw new Error(`Request failed with status: ${response.status}`);
       }
 
-      const data = await response.json();
+      return response.json();
+    });
+
+    if (data) {
       setRepos(data);
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -93,6 +95,7 @@ export default function App({ props }) {
     setLoading(false);
   };
 
+
   // Set alert
   const setAlerts = (msg) => {
     setAlert(msg);
@@ -100,7 +103,6 @@ export default function App({ props }) {
   };
 
   return (
-    <GithubState>
       <Router>
         <div>
           <Navbar />
@@ -139,7 +141,5 @@ export default function App({ props }) {
           </Routes>
         </div>
       </Router>
-    </GithubState>
-
   );
 }

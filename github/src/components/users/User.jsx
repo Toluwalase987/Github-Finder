@@ -5,15 +5,21 @@ import { FaCheck, FaTimesCircle } from "react-icons/fa"
 import Repos from "../repos/repos";
 
 export default function User({ user, getUser, getUserRepo,repos, loading }) {
-  const { login } = useParams();
+ const { login } = useParams();
 
   useEffect(() => {
-    getUser(login);
-  }, [getUser, login]);
+    // Check if the `login` parameter has changed before making the API request
+    if (login !== user.login) {
+      getUser(login);
+    }
+  }, [getUser, login, user.login]);
 
   useEffect(() => {
-    getUserRepo(login);
-  }, [getUserRepo, login]);
+    // Check if the `login` parameter has changed before making the API request
+    if (login !== user.login) {
+      getUserRepo(login);
+    }
+  }, [getUserRepo, login, user.login]);
 
   const {
     name,
