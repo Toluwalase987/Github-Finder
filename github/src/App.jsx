@@ -18,23 +18,13 @@ export default function App({ props }) {
   const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
   const githubClientSecret = import.meta.env.VITE_GITHUB_CLIENT_SECRET;
 
-  const handleRequest = async (requestFn) => {
-    setLoading(true);
-    try {
-      const data = await requestFn();
-      return data;
-    } catch (error) {
-      console.error("Error:", error);
-      setAlert("Failed to fetch data. Please try again later.");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+ 
+  
 
   // Search Github Users
   const searchUsers = async (text) => {
-    const data = await handleRequest(async () => {
+    setLoading(true);
+    try {
       const response = await fetch(
         `https://api.github.com/search/users?q=${text}&client_id=${githubClientId}&client_secret=${githubClientSecret}`
       );
@@ -43,17 +33,19 @@ export default function App({ props }) {
         throw new Error(`Request failed with status: ${response.status}`);
       }
 
-      return response.json();
-    });
-
-    if (data) {
+      const data = await response.json();
       setUsers(data.items);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Get single Github user
   const getUser = async (username) => {
-    const data = await handleRequest(async () => {
+    setLoading(true);
+    try {
       const response = await fetch(
         `https://api.github.com/users/${username}?client_id=${githubClientId}&client_secret=${githubClientSecret}`
       );
@@ -62,17 +54,19 @@ export default function App({ props }) {
         throw new Error(`Request failed with status: ${response.status}`);
       }
 
-      return response.json();
-    });
-
-    if (data) {
+      const data = await response.json();
       setUser(data);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Get users repos
   const getUserRepo = async (username) => {
-    const data = await handleRequest(async () => {
+    setLoading(true);
+    try {
       const response = await fetch(
         `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=${githubClientId}&client_secret=${githubClientSecret}`
       );
@@ -81,11 +75,12 @@ export default function App({ props }) {
         throw new Error(`Request failed with status: ${response.status}`);
       }
 
-      return response.json();
-    });
-
-    if (data) {
+      const data = await response.json();
       setRepos(data);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,7 +89,6 @@ export default function App({ props }) {
     setUsers([]);
     setLoading(false);
   };
-
 
   // Set alert
   const setAlerts = (msg) => {
