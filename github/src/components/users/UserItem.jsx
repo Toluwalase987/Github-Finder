@@ -14,7 +14,7 @@ export default function UserItem({ user: { login, avatar_url, html_url } }) {
       <img src={avatar_url} alt="" className='image'/> 
       <h3>{login}</h3>
       <div>
-        <button onClick={handleMoreButtonClick} className='button'>
+        <button onClick={handleMoreButtonClick} className='link2'>
           More
         </button>
       </div>
